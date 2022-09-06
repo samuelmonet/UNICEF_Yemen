@@ -70,7 +70,7 @@ col1,col2=st.columns([3,3])
 month=col1.selectbox("Select month :",["all"]+months)
 
 carte = px.choropleth_mapbox(df, geojson=geojson, locations=df.index, color=month,
-                           color_continuous_scale="Viridis",featureidkey="properties."+geokey,
+                           color_continuous_scale="reds",featureidkey="properties."+geokey,
                            range_color=(0, max(df[month])),
                             mapbox_style="carto-positron",
                            zoom=7, center = {"lat": 15.5, "lon": 43.6},
@@ -115,7 +115,16 @@ if len(other_indicators)>0:
 	col1.plotly_chart(fig,use_container_width=True)
 	
 	for indicator in other_indicators:
-		df2=data[[indicator,level,"Date"]].groupby([level,"Date"]).sum().unstack().fillna(0)[[(indicator,months[i]) for i in range(6)]]
+		
+		if level!="Sub-District":
+			df2=data[[indicator,level,"Date"]].copy()
+		else:
+			df2=data[["District",level,"Date",indicator]].copy()
+			df2=df2[df2[level]!="Unknown"].copy()
+			df2.columns=["District","sd","Date",indicator]
+			df2[level]=df2.apply(lambda row:row["District"]+" "+row["sd"],axis=1)
+				
+		df2=df2[[indicator,level,"Date"]].groupby([level,"Date"]).sum().unstack().fillna(0)[[(indicator,months[i]) for i in range(6)]]
 		df2.columns=months
 		df2["all"]=df2.sum(axis=1)
 		
