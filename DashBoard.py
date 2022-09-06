@@ -55,8 +55,10 @@ for feat in feats:
 	
 if len(feats)>1:
 	titre="Sum of the selected indicators per month"
-else:
+elif len(feats)==1:
 	titre="Evolution of indicator: "+" - ".join(features.ffill(axis=1)[features.ffill(axis=1)[5]==feats[0]].iloc[0].unique()[:-1])
+else:
+	titre="Select one indicator"
 
 df=df.groupby([level,"Date"]).sum().unstack().fillna(0)[[("indicator",months[i]) for i in range(6)]]
 df.columns=months
