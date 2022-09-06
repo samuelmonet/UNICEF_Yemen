@@ -52,6 +52,11 @@ else:
 
 for feat in feats:
 	df["indicator"]+=data[feat]
+	
+if len(feats)>1:
+	titre="Sum of the selected indicators per month"
+else:
+	titre="Evolution of indicator: "+" - ".join(features.ffill(axis=1)[features.ffill(axis=1)[5]==feats[0]].iloc[0].unique()[:-1])
 
 df=df.groupby([level,"Date"]).sum().unstack().fillna(0)[[("indicator",months[i]) for i in range(6)]]
 df.columns=months
@@ -88,6 +93,11 @@ for i in regions:
         	stackgroup='one' # define stack group
     		))
 
+
+
+fig.update_layout(title=titre,margin={"r": 20, "t": 50, "l": 40, "b": 20})
+fig.update_layout(yaxis={'title':'Cumulative value'})
+fig.update_layout(legend_title=level)                
 col2.plotly_chart(fig,use_container_width=True)
 
 
@@ -99,6 +109,9 @@ other_indicators=st.multiselect('Visualize other indicators over the same region
 col1,col2=st.columns([3,3])
 
 if len(other_indicators)>0:
+	fig.update_layout(title="Above selected indicator")
+	col1.plotly_chart(fig,use_container_width=True)
+	
 	for indicator in other_indicators:
 		df2=data[[indicator,level,"Date"]].groupby([level,"Date"]).sum().unstack().fillna(0)[[(indicator,months[i]) for i in range(6)]]
 		df2.columns=months
@@ -116,7 +129,14 @@ if len(other_indicators)>0:
 				name=i,
 				stackgroup='one' # define stack group
 		    		))
-		if other_indicators.index(indicator)%2==0:
+		fig2.update_layout(title="Evolution of indicator: "+\
+		" - ".join(features_struct.ffill(axis=1)[features_struct.ffill(axis=1)[5]==indicator]\
+						.iloc[0].unique()[:-1]),margin={"r": 20, "t": 50, "l": 40, "b": 20})
+		fig2.update_layout(yaxis={'title':'Cumulative value'})
+		fig2.update_layout(legend_title=level)        
+		
+		
+		if other_indicators.index(indicator)%2==1:
 			col1.plotly_chart(fig2,use_container_width=True)
 		else:
 			col2.plotly_chart(fig2,use_container_width=True)
